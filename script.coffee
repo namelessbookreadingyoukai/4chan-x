@@ -1824,14 +1824,21 @@ QR =
       QR.status()
       return
     QR.abort()
-    reply = QR.replies[0]
 
+    reply = QR.replies[0]
     threadID = g.THREAD_ID or $('select', QR.el).value
 
     # prevent errors
-    unless threadID is 'new' and reply.file or threadID isnt 'new' and (reply.com or reply.file)
-      err = 'No file selected.'
-    else if QR.captchaIsEnabled
+    if threadID is 'new'
+      if g.BOARD in ['vg', 'q'] and !reply.sub
+        err = 'New threads require a subject.'
+      else unless reply.file or textOnly = !!$ 'input[name=textonly]', $.id 'postForm'
+          err = 'No file selected.'
+    else
+      unless reply.com or reply.file
+        err = 'No file selected.'
+
+    if QR.captchaIsEnabled and !err
       # get oldest valid captcha
       captchas = $.get 'captchas', []
       # remove old captchas
@@ -1869,14 +1876,15 @@ QR =
     QR.status progress: '...'
 
     post =
-      resto:   threadID
-      name:    reply.name
-      email:   reply.email
-      sub:     reply.sub
-      com:     reply.com
-      upfile:  reply.file
-      spoiler: reply.spoiler
-      mode:    'regist'
+      resto:    threadID
+      name:     reply.name
+      email:    reply.email
+      sub:      reply.sub
+      com:      reply.com
+      upfile:   reply.file
+      spoiler:  reply.spoiler
+      textonly: textOnly
+      mode:     'regist'
       pwd: if m = d.cookie.match(/4chan_pass=([^;]+)/) then decodeURIComponent m[1] else $('input[name=pwd]').value
       recaptcha_challenge_field: challenge
       recaptcha_response_field:  response + ' '
@@ -1960,7 +1968,7 @@ QR =
     else
       # Enable auto-posting if we have stuff to post, disable it otherwise.
       QR.cooldown.auto = QR.replies.length > 1
-      QR.cooldown.set if /sage/i.test reply.email then 60 else 30
+      QR.cooldown.set if g.BOARD is 'q' or /sage/i.test reply.email then 60 else 30
       if Conf['Open Reply in New Tab'] && !g.REPLY && !QR.cooldown.auto
         $.open "//boards.4chan.org/#{g.BOARD}/res/#{threadID}#p#{postID}"
 
@@ -3013,6 +3021,8 @@ QuoteBacklink =
     return if post.isInlined
     quotes = {}
     for quote in post.quotes
+      # Stop at 'Admin/Mod/Dev Replies:' on /q/
+      break if quote.parentNode.getAttribute('style') is 'font-size: smaller;'
       # Don't process >>>/b/.
       if qid = quote.hash[2..]
         # Duplicate quotes get overwritten.
@@ -3453,7 +3463,7 @@ ThreadStats =
         when 'a', 'b', 'v', 'co', 'mlp'
           251
         when 'vg'
-          501
+          376
         else
           151
     Main.callbacks.push @node
@@ -3634,7 +3644,7 @@ Redirect =
         url = "//archive.rebeccablacktech.com/#{path}"
         if threadID and postID
           url += "#p#{postID}"
-      when 'an', 'fit', 'k', 'r9k', 'toy', 'x'
+      when 'an', 'fit', 'k', 'mlp', 'r9k', 'toy', 'x'
         url = "http://archive.heinessen.com/#{path}"
         if threadID and postID
           url += "#p#{postID}"
@@ -4111,7 +4121,7 @@ Main =
     $.globalEval "(#{code})()".replace '_id_', bq.id
 
   namespace: '4chan_x.'
-  version: '2.34.4'
+  version: '2.34.5'
   callbacks: []
   css: '
 /* dialog styling */

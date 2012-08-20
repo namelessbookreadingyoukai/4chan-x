@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           4chan x
-// @version        2.34.4
+// @version        2.34.5
 // @namespace      aeosynth
 // @description    Adds various features.
 // @copyright      2009-2011 James Campos <james.r.campos@gmail.com>
@@ -23,7 +23,7 @@
  * Copyright (c) 2009-2011 James Campos <james.r.campos@gmail.com>
  * Copyright (c) 2012 Nicolas Stepien <stepien.nicolas@gmail.com>
  * http://mayhemydg.github.com/4chan-x/
- * 4chan X 2.34.4
+ * 4chan X 2.34.5
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -2354,7 +2354,7 @@
       }));
     },
     submit: function(e) {
-      var callbacks, captcha, captchas, challenge, err, m, opts, post, reply, response, threadID;
+      var callbacks, captcha, captchas, challenge, err, m, opts, post, reply, response, textOnly, threadID, _ref;
       if (e != null) {
         e.preventDefault();
       }
@@ -2366,9 +2366,18 @@
       QR.abort();
       reply = QR.replies[0];
       threadID = g.THREAD_ID || $('select', QR.el).value;
-      if (!(threadID === 'new' && reply.file || threadID !== 'new' && (reply.com || reply.file))) {
-        err = 'No file selected.';
-      } else if (QR.captchaIsEnabled) {
+      if (threadID === 'new') {
+        if (((_ref = g.BOARD) === 'vg' || _ref === 'q') && !reply.sub) {
+          err = 'New threads require a subject.';
+        } else if (!(reply.file || (textOnly = !!$('input[name=textonly]', $.id('postForm'))))) {
+          err = 'No file selected.';
+        }
+      } else {
+        if (!(reply.com || reply.file)) {
+          err = 'No file selected.';
+        }
+      }
+      if (QR.captchaIsEnabled && !err) {
         captchas = $.get('captchas', []);
         while ((captcha = captchas[0]) && captcha.time < Date.now()) {
           captchas.shift();
@@ -2413,6 +2422,7 @@
         com: reply.com,
         upfile: reply.file,
         spoiler: reply.spoiler,
+        textonly: textOnly,
         mode: 'regist',
         pwd: (m = d.cookie.match(/4chan_pass=([^;]+)/)) ? decodeURIComponent(m[1]) : $('input[name=pwd]').value,
         recaptcha_challenge_field: challenge,
@@ -2497,7 +2507,7 @@
         location.pathname = "/" + g.BOARD + "/res/" + postID;
       } else {
         QR.cooldown.auto = QR.replies.length > 1;
-        QR.cooldown.set(/sage/i.test(reply.email) ? 60 : 30);
+        QR.cooldown.set(g.BOARD === 'q' || /sage/i.test(reply.email) ? 60 : 30);
         if (Conf['Open Reply in New Tab'] && !g.REPLY && !QR.cooldown.auto) {
           $.open("//boards.4chan.org/" + g.BOARD + "/res/" + threadID + "#p" + postID);
         }
@@ -3789,6 +3799,9 @@
       _ref = post.quotes;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         quote = _ref[_i];
+        if (quote.parentNode.getAttribute('style') === 'font-size: smaller;') {
+          break;
+        }
         if (qid = quote.hash.slice(2)) {
           quotes[qid] = true;
         }
@@ -4346,7 +4359,7 @@
           case 'mlp':
             return 251;
           case 'vg':
-            return 501;
+            return 376;
           default:
             return 151;
         }
@@ -4593,6 +4606,7 @@
         case 'an':
         case 'fit':
         case 'k':
+        case 'mlp':
         case 'r9k':
         case 'toy':
         case 'x':
@@ -5244,7 +5258,7 @@
       return $.globalEval(("(" + code + ")()").replace('_id_', bq.id));
     },
     namespace: '4chan_x.',
-    version: '2.34.4',
+    version: '2.34.5',
     callbacks: [],
     css: '\
 /* dialog styling */\
