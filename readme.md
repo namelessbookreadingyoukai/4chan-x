@@ -1,4 +1,4 @@
-# Get 4chan X [HERE](http://mayhemydg.github.com/4chan-x/).
+# Get 4chan X [HERE](https://github.com/that4chanwolf/4chan-x/raw/master/4chan_x.user.js).
 
 # Building
 

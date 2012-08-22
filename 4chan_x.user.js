@@ -13,8 +13,8 @@
 // @include        http://sys.4chan.org/*
 // @include        https://sys.4chan.org/*
 // @run-at         document-start
-// @updateURL      https://github.com/MayhemYDG/4chan-x/raw/stable/4chan_x.user.js
-// @downloadURL    https://github.com/MayhemYDG/4chan-x/raw/stable/4chan_x.user.js
+// @updateURL      https://github.com/that4chanwolf/4chan-x/raw/stable/4chan_x.user.js
+// @downloadURL    https://github.com/that4chanwolf/4chan-x/raw/stable/4chan_x.user.js
 // @icon           http://mayhemydg.github.com/4chan-x/favicon.gif
 // ==/UserScript==
 
@@ -22,7 +22,7 @@
  *
  * Copyright (c) 2009-2011 James Campos <james.r.campos@gmail.com>
  * Copyright (c) 2012 Nicolas Stepien <stepien.nicolas@gmail.com>
- * http://mayhemydg.github.com/4chan-x/
+ * http://that4chanwolf.github.com/4chan-x/
  * 4chan X 2.34.5
  *
  * Permission is hereby granted, free of charge, to any person
@@ -50,7 +50,7 @@
  * 4chan X is written in CoffeeScript[1], and developed on GitHub[2].
  *
  * [1]: http://coffeescript.org/
- * [2]: https://github.com/MayhemYDG/4chan-x
+ * [2]: https://github.com/that4chanwolf/4chan-x
  *
  * CONTRIBUTORS
  *
@@ -70,6 +70,7 @@
  * herpaderpderp - recaptcha fixes
  * WakiMiko - recaptcha tab order http://userscripts.org/scripts/show/82657
  * btmcsweeney - allow users to specify text for sauce links
+ * MayhemYDG - botnet
  *
  * All the people who've taken the time to write bug reports.
  *
@@ -135,7 +136,8 @@
         'Remember QR size': [false, 'Remember the size of the Quick reply (Firefox only).'],
         'Remember Subject': [false, 'Remember the subject field, instead of resetting after posting.'],
         'Remember Spoiler': [false, 'Remember the spoiler state, instead of resetting after posting.'],
-        'Hide Original Post Form': [true, 'Replace the normal post form with a shortcut to open the QR.']
+        'Hide Original Post Form': [true, 'Replace the normal post form with a shortcut to open the QR.'],
+        'Sage on /jp/': [true, 'Uses sage by default on /jp/']
       },
       Quoting: {
         'Quote Backlinks': [true, 'Add quote backlinks'],
