@@ -2434,7 +2434,7 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
         mode: 'regist',
         pwd: (m = d.cookie.match(/4chan_pass=([^;]+)/)) ? decodeURIComponent(m[1]) : $('input[name=pwd]').value,
         recaptcha_challenge_field: challenge,
-        recaptcha_response_field: response + ' '
+        recaptcha_response_field: response.replace(/^\s+/, 'a ').replace(/\s+$/, ' a')
       };
       try {
         if (typeof (_base1 = console.log).bind === "function") {
