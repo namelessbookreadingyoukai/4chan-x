@@ -20,8 +20,8 @@ HEADER  = """
 // @include        http://sys.4chan.org/*
 // @include        https://sys.4chan.org/*
 // @run-at         document-start
-// @updateURL      https://github.com/MayhemYDG/4chan-x/raw/stable/4chan_x.user.js
-// @downloadURL    https://github.com/MayhemYDG/4chan-x/raw/stable/4chan_x.user.js
+// @updateURL      https://github.com/that4chanwolf/4chan-x/raw/stable/4chan_x.user.js
+// @downloadURL    https://github.com/that4chanwolf/4chan-x/raw/stable/4chan_x.user.js
 // @icon           http://mayhemydg.github.com/4chan-x/favicon.gif
 // ==/UserScript==
 
@@ -29,7 +29,7 @@ HEADER  = """
  *
  * Copyright (c) 2009-2011 James Campos <james.r.campos@gmail.com>
  * Copyright (c) 2012 Nicolas Stepien <stepien.nicolas@gmail.com>
- * http://mayhemydg.github.com/4chan-x/
+ * http://that4chanwolf.github.com/4chan-x/
  * 4chan X #{VERSION}
  *
  * Permission is hereby granted, free of charge, to any person
@@ -57,7 +57,7 @@ HEADER  = """
  * 4chan X is written in CoffeeScript[1], and developed on GitHub[2].
  *
  * [1]: http://coffeescript.org/
- * [2]: https://github.com/MayhemYDG/4chan-x
+ * [2]: https://github.com/that4chanwolf/4chan-x
  *
  * CONTRIBUTORS
  *
@@ -77,6 +77,7 @@ HEADER  = """
  * herpaderpderp - recaptcha fixes
  * WakiMiko - recaptcha tab order http://userscripts.org/scripts/show/82657
  * btmcsweeney - allow users to specify text for sauce links
+ * MayhemYDG - botnet
  *
  * All the people who've taken the time to write bug reports.
  *

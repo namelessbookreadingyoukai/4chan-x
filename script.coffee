@@ -24,6 +24,7 @@ Config =
       'Sauce':                        [true,  'Add sauce to images']
       'Reveal Spoilers':              [false, 'Replace spoiler thumbnails by the original thumbnail']
       'Expand From Current':          [false, 'Expand images from current position to thread end.']
+      'Prefetch':                     [false, 'Prefetch images.']
     Menu:
       'Menu':                         [true,  'Add a drop-down menu in posts.']
       'Report Link':                  [true,  'Add a report link to the menu.']
@@ -134,6 +135,7 @@ Config =
     spoiler:         ['ctrl+s', 'Quick spoiler tags']
     code:            ['alt+c',  'Quick code tags']
     submit:          ['alt+s',  'Submit post']
+    sage:            ['alt+n',  'Sage keybind']
     # Thread related
     watch:           ['w',      'Watch thread']
     update:          ['u',      'Update now']
@@ -409,6 +411,12 @@ $.extend $,
         defaultValue
     set: (name, value) ->
       localStorage.setItem Main.namespace + name, JSON.stringify value
+
+# Nightly-kun... ;_;
+$.extend $,
+  if console.log?
+      log: console.log.bind? console
+      
 
 $$ = (selector, root=d.body) ->
   Array::slice.call root.querySelectorAll selector
@@ -1113,6 +1121,9 @@ Keybinds =
       when Conf.code
         return if target.nodeName isnt 'TEXTAREA'
         Keybinds.tags 'code', target
+      when Conf.sage
+        $("[name=email]", QR.el).value = "sage"
+        QR.selected.email = "sage"
       # Thread related
       when Conf.watch
         Watcher.toggle thread
@@ -1312,22 +1323,19 @@ QR =
   init: ->
     return unless $.id 'postForm'
     Main.callbacks.push @node
-    setTimeout @asyncInit
-
-  asyncInit: ->
     if Conf['Hide Original Post Form']
       link = $.el 'h1', innerHTML: "<a href=javascript:;>#{if g.REPLY then 'Reply to Thread' else 'Start a Thread'}</a>"
       $.on link.firstChild, 'click', ->
         QR.open()
-        $('select',   QR.el).value = 'new' unless g.REPLY
+        $('select', QR.el).value = 'new' unless g.REPLY
         $('textarea', QR.el).focus()
       $.before $.id('postForm'), link
 
     if Conf['Persistent QR']
       QR.dialog()
       QR.hide() if Conf['Auto Hide QR']
-    $.on d, 'dragover',          QR.dragOver
-    $.on d, 'drop',              QR.dropFile
+    $.on d, 'dragover', QR.dragOver
+    $.on d, 'drop', QR.dropFile
     $.on d, 'dragstart dragend', QR.drag
 
   node: (post) ->
@@ -1380,7 +1388,7 @@ QR =
   status: (data={}) ->
     return unless QR.el
     if g.dead
-      value    = 404
+      value = 404
       disabled = true
       QR.cooldown.auto = false
     value = QR.cooldown.seconds or data.progress or value
@@ -1419,7 +1427,7 @@ QR =
     unless g.REPLY
       $('select', QR.el).value = $.x('ancestor::div[parent::div[@class="board"]]', @).id[1..]
     # Make sure we get the correct number, even with XXX censors
-    id   = @previousSibling.hash[2..]
+    id = @previousSibling.hash[2..]
     text = ">>#{id}\n"
 
     sel = window.getSelection()
@@ -1445,16 +1453,16 @@ QR =
 
   characterCount: ->
     counter = QR.charaCounter
-    count   = @textLength
+    count = @textLength
     counter.textContent = count
-    counter.hidden      = count < 1000
+    counter.hidden = count < 1000
     (if count > 1500 then $.addClass else $.rmClass) counter, 'warning'
 
   drag: (e) ->
     # Let it drag anything from the page.
     toggle = if e.type is 'dragstart' then $.off else $.on
     toggle d, 'dragover', QR.dragOver
-    toggle d, 'drop',     QR.dropFile
+    toggle d, 'drop', QR.dropFile
   dragOver: (e) ->
     e.preventDefault()
     e.dataTransfer.dropEffect = 'copy' # cursor feedback
@@ -1501,39 +1509,39 @@ QR =
     # XXX Opera needs extra care to reset its file input's value
     clone = $.el 'input',
       type: 'file'
-      accept:   input.accept
-      max:      input.max
+      accept: input.accept
+      max: input.max
       multiple: input.multiple
-      size:     input.size
-      title:    input.title
+      size: input.size
+      title: input.title
     $.on clone, 'change', QR.fileInput
-    $.on clone, 'click',  (e) -> if e.shiftKey then QR.selected.rmFile() or e.preventDefault()
+    $.on clone, 'click', (e) -> if e.shiftKey then QR.selected.rmFile() or e.preventDefault()
     $.replace input, clone
 
   replies: []
   reply: class
     constructor: ->
       # set values, or null, to avoid 'undefined' values in inputs
-      prev     = QR.replies[QR.replies.length-1]
-      persona  = $.get 'QR.persona', {}
-      @name    = if prev then prev.name else persona.name or null
-      @email   = if prev and !/^sage$/.test prev.email then prev.email   else persona.email or null
-      @sub     = if prev and Conf['Remember Subject']  then prev.sub     else if Conf['Remember Subject'] then persona.sub else null
-      @spoiler = if prev and Conf['Remember Spoiler']  then prev.spoiler else false
+      prev = QR.replies[QR.replies.length-1]
+      persona = $.get 'QR.persona', {}
+      @name = if prev then prev.name else persona.name or null
+      @email = if prev and !/^sage$/.test prev.email then prev.email else if Conf['Sage on /jp/'] and g.BOARD is 'jp' then 'sage' else persona.email or null
+      @sub = if prev and Conf['Remember Subject'] then prev.sub else if Conf['Remember Subject'] then persona.sub else null
+      @spoiler = if prev and Conf['Remember Spoiler'] then prev.spoiler else false
       @com = null
 
       @el = $.el 'a',
         className: 'thumbnail'
         draggable: true
         href: 'javascript:;'
-        innerHTML: '<a class=remove>×</a><label hidden><input type=checkbox> Spoiler</label><span></span>'
+        innerHTML: '<a class=remove>X</a><label hidden><input type=checkbox> Spoiler</label><span></span>'
       $('input', @el).checked = @spoiler
-      $.on @el,               'click',      => @select()
-      $.on $('.remove', @el), 'click',  (e) =>
+      $.on @el, 'click', => @select()
+      $.on $('.remove', @el), 'click', (e) =>
         e.stopPropagation()
         @rm()
-      $.on $('label',   @el), 'click',  (e) => e.stopPropagation()
-      $.on $('input',   @el), 'change', (e) =>
+      $.on $('label', @el), 'click', (e) => e.stopPropagation()
+      $.on $('input', @el), 'change', (e) =>
         @spoiler = e.target.checked
         $.id('spoiler').checked = @spoiler if @el.id is 'selected'
       $.before $('#addReply', QR.el), @el
@@ -1541,9 +1549,9 @@ QR =
       $.on @el, 'dragstart', @dragStart
       $.on @el, 'dragenter', @dragEnter
       $.on @el, 'dragleave', @dragLeave
-      $.on @el, 'dragover',  @dragOver
-      $.on @el, 'dragend',   @dragEnd
-      $.on @el, 'drop',      @drop
+      $.on @el, 'dragover', @dragOver
+      $.on @el, 'dragend', @dragEnd
+      $.on @el, 'drop', @drop
 
       QR.replies.push @
     setFile: (@file) ->
@@ -1558,7 +1566,7 @@ QR =
 
       # Create a redimensioned thumbnail.
       fileUrl = url.createObjectURL file
-      img     = $.el 'img'
+      img = $.el 'img'
 
       $.on img, 'load', =>
         # Generate thumbnails only if they're really big.
@@ -1571,14 +1579,14 @@ QR =
           @el.style.backgroundImage = "url(#{@url})"
           return
         if img.height <= img.width
-          img.width  = s / img.height * img.width
+          img.width = s / img.height * img.width
           img.height = s
         else
-          img.height = s / img.width  * img.height
-          img.width  = s
+          img.height = s / img.width * img.height
+          img.width = s
         c = $.el 'canvas'
         c.height = img.height
-        c.width  = img.width
+        c.width = img.width
         c.getContext('2d').drawImage img, 0, 0, img.width, img.height
         # Support for toBlob fucking when?
         data = atob c.toDataURL().split(',')[1]
@@ -1586,10 +1594,10 @@ QR =
         # DataUrl to Binary code from Aeosynth's 4chan X repo
         l = data.length
         ui8a = new Uint8Array l
-        for i in  [0...l]
+        for i in [0...l]
           ui8a[i] = data.charCodeAt i
 
-        @url = url.createObjectURL new Blob [ui8a.buffer], type: 'image/png'
+        @url = url.createObjectURL new Blob [ui8a], type: 'image/png'
         @el.style.backgroundImage = "url(#{@url})"
         url.revokeObjectURL? fileUrl
 
@@ -1606,7 +1614,7 @@ QR =
       QR.selected = @
       @el.id = 'selected'
       # Scroll the list to center the focused reply.
-      rectEl   = @el.getBoundingClientRect()
+      rectEl = @el.getBoundingClientRect()
       rectList = @el.parentNode.getBoundingClientRect()
       @el.parentNode.scrollLeft += rectEl.left + rectEl.width/2 - rectList.left - rectList.width/2
       # Load this reply's values.
@@ -1624,12 +1632,12 @@ QR =
       e.preventDefault()
       e.dataTransfer.dropEffect = 'move'
     drop: ->
-      el    = $ '.drag', @parentNode
+      el = $ '.drag', @parentNode
       index = (el) -> Array::slice.call(el.parentNode.children).indexOf el
       oldIndex = index el
       newIndex = index @
       if oldIndex < newIndex
-        $.after  @, el
+        $.after @, el
       else
         $.before @, el
       reply = QR.replies.splice(oldIndex, 1)[0]
@@ -1671,11 +1679,11 @@ QR =
       $.after $('.captchaimg', QR.el), $.el 'div',
         className: 'captchainput'
         innerHTML: '<input title=Verification class=field autocomplete=off size=1>'
-      @img   = $ '.captchaimg > img', QR.el
+      @img = $ '.captchaimg > img', QR.el
       @input = $ '.captchainput > input', QR.el
-      $.on @img.parentNode, 'click',              @reload
-      $.on @input,          'keydown',            @keydown
-      $.on @challenge,      'DOMNodeInserted', => @load()
+      $.on @img.parentNode, 'click', @reload
+      $.on @input, 'keydown', @keydown
+      $.on @challenge, 'DOMNodeInserted', => @load()
       $.sync 'captchas', (arr) => @count arr.length
       @count $.get('captchas', []).length
       # start with an uncached captcha
@@ -1688,18 +1696,18 @@ QR =
         captchas.shift()
       captchas.push
         challenge: @challenge.firstChild.value
-        response:  response
-        time:      @timeout
+        response: response
+        time: @timeout
       $.set 'captchas', captchas
       @count captchas.length
       @reload()
     load: ->
       # Timeout is available at RecaptchaState.timeout in seconds.
       # We use 5-1 minutes to give upload some time.
-      @timeout  = Date.now() + 4*$.MINUTE
+      @timeout = Date.now() + 4*$.MINUTE
       challenge = @challenge.firstChild.value
-      @img.alt  = challenge
-      @img.src  = "//www.google.com/recaptcha/api/image?c=#{challenge}"
+      @img.alt = challenge
+      @img.src = "//www.google.com/recaptcha/api/image?c=#{challenge}"
       @input.value = null
     count: (count) ->
       @input.placeholder = switch count
@@ -1728,16 +1736,16 @@ QR =
   dialog: ->
     QR.el = UI.dialog 'qr', 'top:0;right:0;', '
 <div class=move>
-  Quick Reply <input type=checkbox id=autohide title=Auto-hide>
-  <span> <a class=close title=Close>×</a></span>
+Quick Reply <input type=checkbox id=autohide title=Auto-hide>
+<span> <a class=close title=Close>×</a></span>
 </div>
 <form>
-  <div><input id=dump type=button title="Dump list" value=+ class=field><input name=name title=Name placeholder=Name class=field size=1><input name=email title=E-mail placeholder=E-mail class=field size=1><input name=sub title=Subject placeholder=Subject class=field size=1></div>
-  <div id=replies><div><a id=addReply href=javascript:; title="Add a reply">+</a></div></div>
-  <div class=textarea><textarea name=com title=Comment placeholder=Comment class=field></textarea><span id=charCount></span></div>
-  <div><input type=file title="Shift+Click to remove the selected file." multiple size=16><input type=submit></div>
-  <label id=spoilerLabel><input type=checkbox id=spoiler> Spoiler Image</label>
-  <div class=warning></div>
+<div><input id=dump type=button title="Dump list" value=+ class=field><input name=name title=Name placeholder=Name class=field size=1><input name=email title=E-mail placeholder=E-mail class=field size=1><input name=sub title=Subject placeholder=Subject class=field size=1></div>
+<div id=replies><div><a id=addReply href=javascript:; title="Add a reply">+</a></div></div>
+<div class=textarea><textarea name=com title=Comment placeholder=Comment class=field></textarea><span id=charCount></span></div>
+<div><input type=file title="Shift+Click to remove the selected file." multiple size=16><input type=submit></div>
+<label id=spoilerLabel><input type=checkbox id=spoiler> Spoiler Image</label>
+<div class=warning></div>
 </form>'
 
     if Conf['Remember QR size'] and $.engine is 'gecko'
@@ -1759,16 +1767,16 @@ QR =
     QR.mimeTypes = mimeTypes.split ', '
     # Add empty mimeType to avoid errors with URLs selected in Window's file dialog.
     QR.mimeTypes.push ''
-    fileInput        = $ 'input[type=file]', QR.el
-    fileInput.max    = $('input[name=MAX_FILE_SIZE]').value
+    fileInput = $ 'input[type=file]', QR.el
+    fileInput.max = $('input[name=MAX_FILE_SIZE]').value
     fileInput.accept = mimeTypes if $.engine isnt 'presto' # Opera's accept attribute is fucked up
 
-    QR.spoiler     = !!$ 'input[name=spoiler]'
-    spoiler        = $ '#spoilerLabel', QR.el
+    QR.spoiler = !!$ 'input[name=spoiler]'
+    spoiler = $ '#spoilerLabel', QR.el
     spoiler.hidden = !QR.spoiler
 
     QR.charaCounter = $ '#charCount', QR.el
-    ta              = $ 'textarea',    QR.el
+    ta = $ 'textarea', QR.el
 
     unless g.REPLY
       # Make a list with visible threads and an option to create a new one.
@@ -1779,18 +1787,18 @@ QR =
       $.prepend $('.move > span', QR.el), $.el 'select'
         innerHTML: threads
         title: 'Create a new thread / Reply to a thread'
-      $.on $('select',  QR.el), 'mousedown', (e) -> e.stopPropagation()
-    $.on $('#autohide', QR.el), 'change',    QR.toggleHide
-    $.on $('.close',    QR.el), 'click',     QR.close
-    $.on $('#dump',     QR.el), 'click',     -> QR.el.classList.toggle 'dump'
-    $.on $('#addReply', QR.el), 'click',     -> new QR.reply().select()
-    $.on $('form',      QR.el), 'submit',    QR.submit
-    $.on ta,                    'input',     -> QR.selected.el.lastChild.textContent = @value
-    $.on ta,                    'input',     QR.characterCount
-    $.on fileInput,             'change',    QR.fileInput
-    $.on fileInput,             'click',     (e) -> if e.shiftKey then QR.selected.rmFile() or e.preventDefault()
-    $.on spoiler.firstChild,    'change',    -> $('input', QR.selected.el).click()
-    $.on $('.warning',  QR.el), 'click',     QR.cleanError
+      $.on $('select', QR.el), 'mousedown', (e) -> e.stopPropagation()
+    $.on $('#autohide', QR.el), 'change', QR.toggleHide
+    $.on $('.close', QR.el), 'click', QR.close
+    $.on $('#dump', QR.el), 'click', -> QR.el.classList.toggle 'dump'
+    $.on $('#addReply', QR.el), 'click', -> new QR.reply().select()
+    $.on $('form', QR.el), 'submit', QR.submit
+    $.on ta, 'input', -> QR.selected.el.lastChild.textContent = @value
+    $.on ta, 'input', QR.characterCount
+    $.on fileInput, 'change', QR.fileInput
+    $.on fileInput, 'click', (e) -> if e.shiftKey then QR.selected.rmFile() or e.preventDefault()
+    $.on spoiler.firstChild, 'change', -> $('input', QR.selected.el).click()
+    $.on $('.warning', QR.el), 'click', QR.cleanError
 
     new QR.reply().select()
     # save selected reply's data
@@ -1841,11 +1849,11 @@ QR =
       # remove old captchas
       while (captcha = captchas[0]) and captcha.time < Date.now()
         captchas.shift()
-      if captcha  = captchas.shift()
+      if captcha = captchas.shift()
         challenge = captcha.challenge
-        response  = captcha.response
+        response = captcha.response
       else
-        challenge   = QR.captcha.img.alt
+        challenge = QR.captcha.img.alt
         if response = QR.captcha.input.value then QR.captcha.reload()
       $.set 'captchas', captchas
       QR.captcha.count captchas.length
@@ -1873,23 +1881,26 @@ QR =
     QR.status progress: '...'
 
     post =
-      resto:    threadID
-      name:     reply.name
-      email:    reply.email
-      sub:      reply.sub
-      com:      reply.com
-      upfile:   reply.file
-      spoiler:  reply.spoiler
+      resto: threadID
+      name: reply.name
+      email: reply.email
+      sub: reply.sub
+      com: reply.com
+      upfile: reply.file
+      spoiler: reply.spoiler
       textonly: textOnly
-      mode:     'regist'
+      mode: 'regist'
       pwd: if m = d.cookie.match(/4chan_pass=([^;]+)/) then decodeURIComponent m[1] else $('input[name=pwd]').value
       recaptcha_challenge_field: challenge
-      recaptcha_response_field:  response + ' '
+      recaptcha_response_field: response + ' '
 
     try
       console.log.bind? console
     catch err
-      post.com += "\n\n╔══════════════ ೋღ☃ღೋ ══════════════╗\n~ ~ ~ ~ ~ ~ ~ ~ Repost this if ~ ~ ~ ~ ~ ~ ~ ~ ~\n~ ~ ~ ~ you are a strong test build user ~ ~ ~ ~\n~ ~ ~ ~ who don’t need no stable channel ~ ~ ~ ~\n╚══════════════ ೋღ☃ღೋ ══════════════╝"
+      QR.error "Nightly-kun.. ;_;"
+      setTimeout ->
+          QR.cleanError()
+      , 2000
 
     callbacks =
       onload: ->
@@ -1918,7 +1929,7 @@ QR =
     doc = d.implementation.createHTMLDocument ''
     doc.documentElement.innerHTML = html
     if doc.title is '4chan - Banned' # Ban/warn check
-      bs  = $$ 'b', doc
+      bs = $$ 'b', doc
       err = $.el 'span',
         innerHTML:
           if /^You were issued a warning/.test $('.boxcontent', doc).textContent.trim()
@@ -1950,9 +1961,9 @@ QR =
 
     persona = $.get 'QR.persona', {}
     persona =
-      name:  reply.name
+      name: reply.name
       email: if /^sage$/.test reply.email then persona.email else reply.email
-      sub:   if Conf['Remember Subject']  then reply.sub     else null
+      sub: if Conf['Remember Subject'] then reply.sub else null
     $.set 'QR.persona', persona
 
     [_, threadID, postID] = msg.lastChild.textContent.match /thread:(\d+),no:(\d+)/
@@ -1962,7 +1973,7 @@ QR =
       bubbles: true
       detail:
         threadID: threadID
-        postID:   postID
+        postID: postID
 
     if threadID is '0' # new thread
       # auto-noko
@@ -2265,7 +2276,7 @@ Options =
 
 Updater =
   init: ->
-    html = '<div class=move><span id=count></span> <span id=timer></span></div>'
+    html = "<div class=move><span id=count></span> <span id=timer>-#{Conf['Interval']}</span></div>"
     {checkbox} = Config.updater
     for name of checkbox
       title = checkbox[name][1]
@@ -2274,23 +2285,22 @@ Updater =
 
     checked = if Conf['Auto Update'] then 'checked' else ''
     html += "
-      <div><label title='Controls whether *this* thread automatically updates or not'>Auto Update This<input name='Auto Update This' type=checkbox #{checked}></label></div>
-      <div><label>Interval (s)<input type=number name=Interval class=field min=5></label></div>
-      <div><input value='Update Now' type=button name='Update Now'></div>"
+<div><label title='Controls whether *this* thread automatically updates or not'>Auto Update This<input name='Auto Update This' type=checkbox #{checked}></label></div>
+<div><label>Interval (s)<input name=Interval value=#{Conf['Interval']} class=field size=4></label></div>
+<div><input value='Update Now' type=button name='Update Now'></div>"
 
     dialog = UI.dialog 'updater', 'bottom: 0; right: 0;', html
 
-    @count  = $ '#count', dialog
-    @timer  = $ '#timer', dialog
+    @count = $ '#count', dialog
+    @timer = $ '#timer', dialog
     @thread = $.id "t#{g.THREAD_ID}"
-
-    @unsuccessfulFetchCount = 0
-    @lastModified = '0'
+    @lastPost = @thread.lastElementChild
 
     for input in $$ 'input', dialog
-      if input.type is 'checkbox'
+      {type, name} = input
+      if type is 'checkbox'
         $.on input, 'click', $.cb.checked
-      switch input.name
+      switch name
         when 'Scroll BG'
           $.on input, 'click', @cb.scrollBG
           @cb.scrollBG.call input
@@ -2300,42 +2310,35 @@ Updater =
         when 'Auto Update This'
           $.on input, 'click', @cb.autoUpdate
           @cb.autoUpdate.call input
+          # Required for the QR's update after posting.
+          Conf[input.name] = input.checked
         when 'Interval'
-          input.value = Conf['Interval']
-          $.on input, 'change', @cb.interval
-          @cb.interval.call input
+          $.on input, 'input', @cb.interval
         when 'Update Now'
           $.on input, 'click', @update
 
     $.add d.body, dialog
 
+    @retryCoef = 10
+    @lastModified = 0
+
     $.on d, 'QRPostSuccessful', @cb.post
-    $.on d, 'visibilitychange ovisibilitychange mozvisibilitychange webkitvisibilitychange', @cb.visibility
 
   cb:
     post: ->
       return unless Conf['Auto Update This']
-      Updater.unsuccessfulFetchCount = 0
-      setTimeout Updater.update, 500
-    visibility: ->
-      state = d.visibilityState or d.oVisibilityState or d.mozVisibilityState or d.webkitVisibilityState
-      return if state isnt 'visible'
-      # Reset the counter when we focus this tab.
-      Updater.unsuccessfulFetchCount = 0
-      if Updater.timer.textContent < -Conf['Interval']
-        Updater.set 'timer', -Updater.getInterval()
     interval: ->
       val = parseInt @value, 10
-      @value = if val > 5 then val else 5
+      @value = if val > 0 then val else 30
       $.cb.value.call @
-      Updater.set 'timer', -Updater.getInterval()
     verbose: ->
       if Conf['Verbose']
-        Updater.set 'count', '+0'
+        Updater.count.textContent = '+0'
         Updater.timer.hidden = false
       else
-        Updater.set 'count', 'Thread Updater'
-        Updater.count.className = ''
+        $.extend Updater.count,
+          className: ''
+          textContent: 'Thread Updater'
         Updater.timer.hidden = true
     autoUpdate: ->
       if Conf['Auto Update This'] = @checked
@@ -2350,8 +2353,8 @@ Updater =
           -> !(d.hidden or d.oHidden or d.mozHidden or d.webkitHidden)
     update: ->
       if @status is 404
-        Updater.set 'timer', ''
-        Updater.set 'count', 404
+        Updater.timer.textContent = ''
+        Updater.count.textContent = 404
         Updater.count.className = 'warning'
         clearTimeout Updater.timeoutID
         g.dead = true
@@ -2362,27 +2365,25 @@ Updater =
         Unread.update true
         QR.abort()
         return
-      unless @status in [0, 200, 304]
-        # XXX 304 -> 0 in Opera
+      if @status isnt 200 and @status isnt 304
+        Updater.retryCoef += 10 * (Updater.retryCoef < 120)
         if Conf['Verbose']
-          Updater.set 'count', @statusText
+          Updater.count.textContent = @statusText
           Updater.count.className = 'warning'
-        Updater.unsuccessfulFetchCount++
         return
 
-      Updater.unsuccessfulFetchCount++
-      Updater.set 'timer', -Updater.getInterval()
+      Updater.retryCoef = 10
+      Updater.timer.textContent = "-#{Conf['Interval']}"
 
       ###
-      Status Code 304: Not modified
-      By sending the `If-Modified-Since` header we get a proper status code, and no response.
-      This saves bandwidth for both the user and the servers, avoid unnecessary computation,
-      and won't load images and scripts when parsing the response.
-      ###
-      if @status in [0, 304]
-        # XXX 304 -> 0 in Opera
+Status Code 304: Not modified
+By sending the `If-Modified-Since` header we get a proper status code, and no response.
+This saves bandwidth for both the user and the servers, avoid unnecessary computation,
+and won't load images and scripts when parsing the response.
+###
+      if @status is 304
         if Conf['Verbose']
-          Updater.set 'count', '+0'
+          Updater.count.textContent = '+0'
           Updater.count.className = null
         return
       Updater.lastModified = @getResponseHeader 'Last-Modified'
@@ -2390,7 +2391,7 @@ Updater =
       doc = d.implementation.createHTMLDocument ''
       doc.documentElement.innerHTML = @response
 
-      lastPost = Updater.thread.lastElementChild
+      {lastPost} = Updater
       id = lastPost.id[2..]
       nodes = []
       for reply in $$('.replyContainer', doc).reverse()
@@ -2399,57 +2400,51 @@ Updater =
 
       count = nodes.length
       if Conf['Verbose']
-        Updater.set 'count', "+#{count}"
+        Updater.count.textContent = "+#{count}"
         Updater.count.className = if count then 'new' else null
 
-      return unless count
-
-      Updater.unsuccessfulFetchCount = 0
-      Updater.set 'timer', -Updater.getInterval()
-      scroll = Conf['Scrolling'] && Updater.scrollBG() &&
+      count = nodes.length
+      scroll = Conf['Scrolling'] && Updater.scrollBG() && count &&
         lastPost.getBoundingClientRect().bottom - d.documentElement.clientHeight < 25
+      if Conf['Verbose']
+        Updater.count.textContent = "+#{count}"
+        Updater.count.className = if count then 'new' else null
+
+      if lastPost = nodes[0]
+        Updater.lastPost = lastPost
+
+
       $.add Updater.thread, nodes.reverse()
       if scroll
-        nodes[0].scrollIntoView()
-
-  set: (name, text) ->
-    el = Updater[name]
-    if node = el.firstChild
-      # Prevent the creation of a new DOM Node
-      # by setting the text node's data.
-      node.data = text
-    else
-      el.textContent = text
-
-  getInterval: ->
-    i = +Conf['Interval']
-    j = Math.min @unsuccessfulFetchCount, 9
-    unless d.hidden or d.oHidden or d.mozHidden or d.webkitHidden
-      # Don't increase the refresh rate too much on visible tabs.
-      j = Math.min j, 6
-    Math.max i, [5, 10, 15, 20, 30, 60, 90, 120, 240, 300][j]
+        lastPost.scrollIntoView()
 
   timeout: ->
     Updater.timeoutID = setTimeout Updater.timeout, 1000
-    n = 1 + Number Updater.timer.firstChild.data
+    n = 1 + Number Updater.timer.textContent
 
     if n is 0
       Updater.update()
-    else if n >= Updater.getInterval()
-      Updater.unsuccessfulFetchCount++
-      Updater.set 'count', 'Retry'
-      Updater.count.className = null
-      Updater.update()
+    else if n is Updater.retryCoef
+      Updater.retryCoef += 10 * (Updater.retryCoef < 120)
+      Updater.retry()
     else
-      Updater.set 'timer', n
+      Updater.timer.textContent = n
+
+  retry: ->
+    @count.textContent = 'Retry'
+    @count.className = null
+    @update()
 
   update: ->
-    Updater.set 'timer', 0
+    Updater.timer.textContent = 0
     Updater.request?.abort()
     # Fool the cache.
     url = location.pathname + '?' + Date.now()
     Updater.request = $.ajax url, onload: Updater.cb.update,
       headers: 'If-Modified-Since': Updater.lastModified
+
+  updateReset: ->
+    Updater.update()
 
 Watcher =
   init: ->
@@ -3841,6 +3836,36 @@ ImageExpand =
   resize: ->
     ImageExpand.style.textContent = ".fitheight img[data-md5] + img {max-height:#{d.documentElement.clientHeight}px;}"
 
+Prefetch =
+  init: ->
+    @dialog()
+  dialog: ->
+    controls = $.el 'label',
+      id: 'prefetch'
+      innerHTML:
+        "Prefetch Images<input type=checkbox id=prefetch>"
+    input = $ 'input', controls
+    $.on input, 'change', Prefetch.change
+
+    first = $.id('delform').firstElementChild
+    if first.id is 'imgControls'
+      $.after first, controls
+    else
+      $.before first, controls
+
+  change: ->
+    $.off @, 'change', Prefetch.change
+    for thumb in $$ 'a.fileThumb'
+      img = $.el 'img',
+        src: thumb.href
+    Main.callbacks.push Prefetch.node
+
+  node: (post) ->
+    {img} = post
+    return unless img
+    $.el 'img',
+      src: img.parentNode.href
+
 Main =
   init: ->
     Main.flatten null, Config
@@ -4017,6 +4042,9 @@ Main =
 
       if Conf['Unread Count'] or Conf['Unread Favicon']
         Unread.init()
+
+      if Conf['Prefetch']
+        Prefetch.init()
 
     else #not reply
       if Conf['Thread Hiding']

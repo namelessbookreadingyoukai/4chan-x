@@ -77,7 +77,7 @@
  */
 
 (function() {
-  var $, $$, Anonymize, ArchiveLink, AutoGif, Conf, Config, DeleteLink, DownloadLink, ExpandComment, ExpandThread, Favicon, FileInfo, Filter, Get, ImageExpand, ImageHover, Keybinds, Main, Menu, Nav, Options, QR, QuoteBacklink, QuoteCT, QuoteInline, QuoteOP, QuotePreview, Quotify, Redirect, ReplyHiding, ReportLink, RevealSpoilers, Sauce, StrikethroughQuotes, ThreadHiding, ThreadStats, Time, TitlePost, UI, Unread, Updater, Watcher, d, g;
+  var $, $$, Anonymize, ArchiveLink, AutoGif, Conf, Config, DeleteLink, DownloadLink, ExpandComment, ExpandThread, Favicon, FileInfo, Filter, Get, ImageExpand, ImageHover, Keybinds, Main, Menu, Nav, Options, Prefetch, QR, QuoteBacklink, QuoteCT, QuoteInline, QuoteOP, QuotePreview, Quotify, Redirect, ReplyHiding, ReportLink, RevealSpoilers, Sauce, StrikethroughQuotes, ThreadHiding, ThreadStats, Time, TitlePost, UI, Unread, Updater, Watcher, d, g, _base;
 
   Config = {
     main: {
@@ -106,7 +106,8 @@
         'Image Hover': [false, 'Show full image on mouseover'],
         'Sauce': [true, 'Add sauce to images'],
         'Reveal Spoilers': [false, 'Replace spoiler thumbnails by the original thumbnail'],
-        'Expand From Current': [false, 'Expand images from current position to thread end.']
+        'Expand From Current': [false, 'Expand images from current position to thread end.'],
+        'Prefetch': [false, 'Prefetch images.']
       },
       Menu: {
         'Menu': [true, 'Add a drop-down menu in posts.'],
@@ -175,6 +176,7 @@
       spoiler: ['ctrl+s', 'Quick spoiler tags'],
       code: ['alt+c', 'Quick code tags'],
       submit: ['alt+s', 'Submit post'],
+      sage: ['alt+n', 'Sage keybind'],
       watch: ['w', 'Watch thread'],
       update: ['u', 'Update now'],
       unreadCountTo0: ['z', 'Reset unread status'],
@@ -535,6 +537,10 @@
       return localStorage.setItem(Main.namespace + name, JSON.stringify(value));
     }
   });
+
+  $.extend($, console.log != null ? {
+    log: typeof (_base = console.log).bind === "function" ? _base.bind(console) : void 0
+  } : void 0);
 
   $$ = function(selector, root) {
     if (root == null) {
@@ -1406,6 +1412,10 @@
           }
           Keybinds.tags('code', target);
           break;
+        case Conf.sage:
+          $("[name=email]", QR.el).value = "sage";
+          QR.selected.email = "sage";
+          break;
         case Conf.watch:
           Watcher.toggle(thread);
           break;
@@ -1692,14 +1702,11 @@
 
   QR = {
     init: function() {
+      var link;
       if (!$.id('postForm')) {
         return;
       }
       Main.callbacks.push(this.node);
-      return setTimeout(this.asyncInit);
-    },
-    asyncInit: function() {
-      var link;
       if (Conf['Hide Original Post Form']) {
         link = $.el('h1', {
           innerHTML: "<a href=javascript:;>" + (g.REPLY ? 'Reply to Thread' : 'Start a Thread') + "</a>"
@@ -1962,7 +1969,7 @@
         prev = QR.replies[QR.replies.length - 1];
         persona = $.get('QR.persona', {});
         this.name = prev ? prev.name : persona.name || null;
-        this.email = prev && !/^sage$/.test(prev.email) ? prev.email : persona.email || null;
+        this.email = prev && !/^sage$/.test(prev.email) ? prev.email : Conf['Sage on /jp/'] && g.BOARD === 'jp' ? 'sage' : persona.email || null;
         this.sub = prev && Conf['Remember Subject'] ? prev.sub : Conf['Remember Subject'] ? persona.sub : null;
         this.spoiler = prev && Conf['Remember Spoiler'] ? prev.spoiler : false;
         this.com = null;
@@ -1970,7 +1977,7 @@
           className: 'thumbnail',
           draggable: true,
           href: 'javascript:;',
-          innerHTML: '<a class=remove>×</a><label hidden><input type=checkbox> Spoiler</label><span></span>'
+          innerHTML: '<a class=remove>X</a><label hidden><input type=checkbox> Spoiler</label><span></span>'
         });
         $('input', this.el).checked = this.spoiler;
         $.on(this.el, 'click', function() {
@@ -2042,7 +2049,7 @@
           for (i = _i = 0; 0 <= l ? _i < l : _i > l; i = 0 <= l ? ++_i : --_i) {
             ui8a[i] = data.charCodeAt(i);
           }
-          _this.url = url.createObjectURL(new Blob([ui8a.buffer], {
+          _this.url = url.createObjectURL(new Blob([ui8a], {
             type: 'image/png'
           }));
           _this.el.style.backgroundImage = "url(" + _this.url + ")";
@@ -2052,7 +2059,7 @@
       };
 
       _Class.prototype.rmFile = function() {
-        var _base;
+        var _base1;
         QR.resetFileInput();
         delete this.file;
         this.el.title = null;
@@ -2060,7 +2067,7 @@
         if (QR.spoiler) {
           $('label', this.el).hidden = true;
         }
-        return typeof (_base = window.URL || window.webkitURL).revokeObjectURL === "function" ? _base.revokeObjectURL(this.url) : void 0;
+        return typeof (_base1 = window.URL || window.webkitURL).revokeObjectURL === "function" ? _base1.revokeObjectURL(this.url) : void 0;
       };
 
       _Class.prototype.select = function() {
@@ -2125,7 +2132,7 @@
       };
 
       _Class.prototype.rm = function() {
-        var index, _base;
+        var index, _base1;
         QR.resetFileInput();
         $.rm(this.el);
         index = QR.replies.indexOf(this);
@@ -2135,8 +2142,8 @@
           (QR.replies[index - 1] || QR.replies[index + 1]).select();
         }
         QR.replies.splice(index, 1);
-        if (typeof (_base = window.URL || window.webkitURL).revokeObjectURL === "function") {
-          _base.revokeObjectURL(this.url);
+        if (typeof (_base1 = window.URL || window.webkitURL).revokeObjectURL === "function") {
+          _base1.revokeObjectURL(this.url);
         }
         return delete this;
       };
@@ -2251,16 +2258,16 @@
       var fileInput, id, mimeTypes, name, spoiler, ta, thread, threads, _i, _j, _len, _len1, _ref, _ref1;
       QR.el = UI.dialog('qr', 'top:0;right:0;', '\
 <div class=move>\
-  Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
-  <span> <a class=close title=Close>×</a></span>\
+Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
+<span> <a class=close title=Close>×</a></span>\
 </div>\
 <form>\
-  <div><input id=dump type=button title="Dump list" value=+ class=field><input name=name title=Name placeholder=Name class=field size=1><input name=email title=E-mail placeholder=E-mail class=field size=1><input name=sub title=Subject placeholder=Subject class=field size=1></div>\
-  <div id=replies><div><a id=addReply href=javascript:; title="Add a reply">+</a></div></div>\
-  <div class=textarea><textarea name=com title=Comment placeholder=Comment class=field></textarea><span id=charCount></span></div>\
-  <div><input type=file title="Shift+Click to remove the selected file." multiple size=16><input type=submit></div>\
-  <label id=spoilerLabel><input type=checkbox id=spoiler> Spoiler Image</label>\
-  <div class=warning></div>\
+<div><input id=dump type=button title="Dump list" value=+ class=field><input name=name title=Name placeholder=Name class=field size=1><input name=email title=E-mail placeholder=E-mail class=field size=1><input name=sub title=Subject placeholder=Subject class=field size=1></div>\
+<div id=replies><div><a id=addReply href=javascript:; title="Add a reply">+</a></div></div>\
+<div class=textarea><textarea name=com title=Comment placeholder=Comment class=field></textarea><span id=charCount></span></div>\
+<div><input type=file title="Shift+Click to remove the selected file." multiple size=16><input type=submit></div>\
+<label id=spoilerLabel><input type=checkbox id=spoiler> Spoiler Image</label>\
+<div class=warning></div>\
 </form>');
       if (Conf['Remember QR size'] && $.engine === 'gecko') {
         $.on(ta = $('textarea', QR.el), 'mouseup', function() {
@@ -2353,7 +2360,7 @@
       }));
     },
     submit: function(e) {
-      var callbacks, captcha, captchas, challenge, err, m, opts, post, reply, response, textOnly, threadID, _base, _ref;
+      var callbacks, captcha, captchas, challenge, err, m, opts, post, reply, response, textOnly, threadID, _base1, _ref;
       if (e != null) {
         e.preventDefault();
       }
@@ -2428,11 +2435,14 @@
         recaptcha_response_field: response + ' '
       };
       try {
-        if (typeof (_base = console.log).bind === "function") {
-          _base.bind(console);
+        if (typeof (_base1 = console.log).bind === "function") {
+          _base1.bind(console);
         }
       } catch (err) {
-        post.com += "\n\n╔══════════════ ೋღ☃ღೋ ══════════════╗\n~ ~ ~ ~ ~ ~ ~ ~ Repost this if ~ ~ ~ ~ ~ ~ ~ ~ ~\n~ ~ ~ ~ you are a strong test build user ~ ~ ~ ~\n~ ~ ~ ~ who don’t need no stable channel ~ ~ ~ ~\n╚══════════════ ೋღ☃ღೋ ══════════════╝";
+        QR.error("Nightly-kun.. ;_;");
+        setTimeout(function() {
+          return QR.cleanError();
+        }, 2000);
       }
       callbacks = {
         onload: function() {
@@ -2844,8 +2854,8 @@
 
   Updater = {
     init: function() {
-      var checkbox, checked, dialog, html, input, name, title, _i, _len, _ref;
-      html = '<div class=move><span id=count></span> <span id=timer></span></div>';
+      var checkbox, checked, dialog, html, input, name, title, type, _i, _len, _ref;
+      html = "<div class=move><span id=count></span> <span id=timer>-" + Conf['Interval'] + "</span></div>";
       checkbox = Config.updater.checkbox;
       for (name in checkbox) {
         title = checkbox[name][1];
@@ -2853,20 +2863,20 @@
         html += "<div><label title='" + title + "'>" + name + "<input name='" + name + "' type=checkbox " + checked + "></label></div>";
       }
       checked = Conf['Auto Update'] ? 'checked' : '';
-      html += "      <div><label title='Controls whether *this* thread automatically updates or not'>Auto Update This<input name='Auto Update This' type=checkbox " + checked + "></label></div>      <div><label>Interval (s)<input type=number name=Interval class=field min=5></label></div>      <div><input value='Update Now' type=button name='Update Now'></div>";
+      html += "<div><label title='Controls whether *this* thread automatically updates or not'>Auto Update This<input name='Auto Update This' type=checkbox " + checked + "></label></div><div><label>Interval (s)<input name=Interval value=" + Conf['Interval'] + " class=field size=4></label></div><div><input value='Update Now' type=button name='Update Now'></div>";
       dialog = UI.dialog('updater', 'bottom: 0; right: 0;', html);
       this.count = $('#count', dialog);
       this.timer = $('#timer', dialog);
       this.thread = $.id("t" + g.THREAD_ID);
-      this.unsuccessfulFetchCount = 0;
-      this.lastModified = '0';
+      this.lastPost = this.thread.lastElementChild;
       _ref = $$('input', dialog);
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         input = _ref[_i];
-        if (input.type === 'checkbox') {
+        type = input.type, name = input.name;
+        if (type === 'checkbox') {
           $.on(input, 'click', $.cb.checked);
         }
-        switch (input.name) {
+        switch (name) {
           case 'Scroll BG':
             $.on(input, 'click', this.cb.scrollBG);
             this.cb.scrollBG.call(input);
@@ -2878,53 +2888,41 @@
           case 'Auto Update This':
             $.on(input, 'click', this.cb.autoUpdate);
             this.cb.autoUpdate.call(input);
+            Conf[input.name] = input.checked;
             break;
           case 'Interval':
-            input.value = Conf['Interval'];
-            $.on(input, 'change', this.cb.interval);
-            this.cb.interval.call(input);
+            $.on(input, 'input', this.cb.interval);
             break;
           case 'Update Now':
             $.on(input, 'click', this.update);
         }
       }
       $.add(d.body, dialog);
-      $.on(d, 'QRPostSuccessful', this.cb.post);
-      return $.on(d, 'visibilitychange ovisibilitychange mozvisibilitychange webkitvisibilitychange', this.cb.visibility);
+      this.retryCoef = 10;
+      this.lastModified = 0;
+      return $.on(d, 'QRPostSuccessful', this.cb.post);
     },
     cb: {
       post: function() {
         if (!Conf['Auto Update This']) {
-          return;
-        }
-        Updater.unsuccessfulFetchCount = 0;
-        return setTimeout(Updater.update, 500);
-      },
-      visibility: function() {
-        var state;
-        state = d.visibilityState || d.oVisibilityState || d.mozVisibilityState || d.webkitVisibilityState;
-        if (state !== 'visible') {
-          return;
-        }
-        Updater.unsuccessfulFetchCount = 0;
-        if (Updater.timer.textContent < -Conf['Interval']) {
-          return Updater.set('timer', -Updater.getInterval());
+
         }
       },
       interval: function() {
         var val;
         val = parseInt(this.value, 10);
-        this.value = val > 5 ? val : 5;
-        $.cb.value.call(this);
-        return Updater.set('timer', -Updater.getInterval());
+        this.value = val > 0 ? val : 30;
+        return $.cb.value.call(this);
       },
       verbose: function() {
         if (Conf['Verbose']) {
-          Updater.set('count', '+0');
+          Updater.count.textContent = '+0';
           return Updater.timer.hidden = false;
         } else {
-          Updater.set('count', 'Thread Updater');
-          Updater.count.className = '';
+          $.extend(Updater.count, {
+            className: '',
+            textContent: 'Thread Updater'
+          });
           return Updater.timer.hidden = true;
         }
       },
@@ -2943,10 +2941,10 @@
         };
       },
       update: function() {
-        var count, doc, id, lastPost, nodes, reply, scroll, _i, _len, _ref, _ref1, _ref2;
+        var count, doc, id, lastPost, nodes, reply, scroll, _i, _len, _ref;
         if (this.status === 404) {
-          Updater.set('timer', '');
-          Updater.set('count', 404);
+          Updater.timer.textContent = '';
+          Updater.count.textContent = 404;
           Updater.count.className = 'warning';
           clearTimeout(Updater.timeoutID);
           g.dead = true;
@@ -2959,26 +2957,26 @@
           QR.abort();
           return;
         }
-        if ((_ref = this.status) !== 0 && _ref !== 200 && _ref !== 304) {
+        if (this.status !== 200 && this.status !== 304) {
+          Updater.retryCoef += 10 * (Updater.retryCoef < 120);
           if (Conf['Verbose']) {
-            Updater.set('count', this.statusText);
+            Updater.count.textContent = this.statusText;
             Updater.count.className = 'warning';
           }
-          Updater.unsuccessfulFetchCount++;
           return;
         }
-        Updater.unsuccessfulFetchCount++;
-        Updater.set('timer', -Updater.getInterval());
+        Updater.retryCoef = 10;
+        Updater.timer.textContent = "-" + Conf['Interval'];
         /*
-              Status Code 304: Not modified
-              By sending the `If-Modified-Since` header we get a proper status code, and no response.
-              This saves bandwidth for both the user and the servers, avoid unnecessary computation,
-              and won't load images and scripts when parsing the response.
+        Status Code 304: Not modified
+        By sending the `If-Modified-Since` header we get a proper status code, and no response.
+        This saves bandwidth for both the user and the servers, avoid unnecessary computation,
+        and won't load images and scripts when parsing the response.
         */
 
-        if ((_ref1 = this.status) === 0 || _ref1 === 304) {
+        if (this.status === 304) {
           if (Conf['Verbose']) {
-            Updater.set('count', '+0');
+            Updater.count.textContent = '+0';
             Updater.count.className = null;
           }
           return;
@@ -2986,12 +2984,12 @@
         Updater.lastModified = this.getResponseHeader('Last-Modified');
         doc = d.implementation.createHTMLDocument('');
         doc.documentElement.innerHTML = this.response;
-        lastPost = Updater.thread.lastElementChild;
+        lastPost = Updater.lastPost;
         id = lastPost.id.slice(2);
         nodes = [];
-        _ref2 = $$('.replyContainer', doc).reverse();
-        for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-          reply = _ref2[_i];
+        _ref = $$('.replyContainer', doc).reverse();
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          reply = _ref[_i];
           if (reply.id.slice(2) <= id) {
             break;
           }
@@ -2999,57 +2997,45 @@
         }
         count = nodes.length;
         if (Conf['Verbose']) {
-          Updater.set('count', "+" + count);
+          Updater.count.textContent = "+" + count;
           Updater.count.className = count ? 'new' : null;
         }
-        if (!count) {
-          return;
+        count = nodes.length;
+        scroll = Conf['Scrolling'] && Updater.scrollBG() && count && lastPost.getBoundingClientRect().bottom - d.documentElement.clientHeight < 25;
+        if (Conf['Verbose']) {
+          Updater.count.textContent = "+" + count;
+          Updater.count.className = count ? 'new' : null;
         }
-        Updater.unsuccessfulFetchCount = 0;
-        Updater.set('timer', -Updater.getInterval());
-        scroll = Conf['Scrolling'] && Updater.scrollBG() && lastPost.getBoundingClientRect().bottom - d.documentElement.clientHeight < 25;
+        if (lastPost = nodes[0]) {
+          Updater.lastPost = lastPost;
+        }
         $.add(Updater.thread, nodes.reverse());
         if (scroll) {
-          return nodes[0].scrollIntoView();
+          return lastPost.scrollIntoView();
         }
       }
-    },
-    set: function(name, text) {
-      var el, node;
-      el = Updater[name];
-      if (node = el.firstChild) {
-        return node.data = text;
-      } else {
-        return el.textContent = text;
-      }
-    },
-    getInterval: function() {
-      var i, j;
-      i = +Conf['Interval'];
-      j = Math.min(this.unsuccessfulFetchCount, 9);
-      if (!(d.hidden || d.oHidden || d.mozHidden || d.webkitHidden)) {
-        j = Math.min(j, 6);
-      }
-      return Math.max(i, [5, 10, 15, 20, 30, 60, 90, 120, 240, 300][j]);
     },
     timeout: function() {
       var n;
       Updater.timeoutID = setTimeout(Updater.timeout, 1000);
-      n = 1 + Number(Updater.timer.firstChild.data);
+      n = 1 + Number(Updater.timer.textContent);
       if (n === 0) {
         return Updater.update();
-      } else if (n >= Updater.getInterval()) {
-        Updater.unsuccessfulFetchCount++;
-        Updater.set('count', 'Retry');
-        Updater.count.className = null;
-        return Updater.update();
+      } else if (n === Updater.retryCoef) {
+        Updater.retryCoef += 10 * (Updater.retryCoef < 120);
+        return Updater.retry();
       } else {
-        return Updater.set('timer', n);
+        return Updater.timer.textContent = n;
       }
+    },
+    retry: function() {
+      this.count.textContent = 'Retry';
+      this.count.className = null;
+      return this.update();
     },
     update: function() {
       var url, _ref;
-      Updater.set('timer', 0);
+      Updater.timer.textContent = 0;
       if ((_ref = Updater.request) != null) {
         _ref.abort();
       }
@@ -3061,6 +3047,9 @@
           'If-Modified-Since': Updater.lastModified
         }
       });
+    },
+    updateReset: function() {
+      return Updater.update();
     }
   };
 
@@ -4913,6 +4902,49 @@
     }
   };
 
+  Prefetch = {
+    init: function() {
+      return this.dialog();
+    },
+    dialog: function() {
+      var controls, first, input;
+      controls = $.el('label', {
+        id: 'prefetch',
+        innerHTML: "Prefetch Images<input type=checkbox id=prefetch>"
+      });
+      input = $('input', controls);
+      $.on(input, 'change', Prefetch.change);
+      first = $.id('delform').firstElementChild;
+      if (first.id === 'imgControls') {
+        return $.after(first, controls);
+      } else {
+        return $.before(first, controls);
+      }
+    },
+    change: function() {
+      var img, thumb, _i, _len, _ref;
+      $.off(this, 'change', Prefetch.change);
+      _ref = $$('a.fileThumb');
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        thumb = _ref[_i];
+        img = $.el('img', {
+          src: thumb.href
+        });
+      }
+      return Main.callbacks.push(Prefetch.node);
+    },
+    node: function(post) {
+      var img;
+      img = post.img;
+      if (!img) {
+        return;
+      }
+      return $.el('img', {
+        src: img.parentNode.href
+      });
+    }
+  };
+
   Main = {
     init: function() {
       var cutoff, hiddenThreads, id, key, now, path, pathname, temp, timestamp, val, _ref;
@@ -5113,6 +5145,9 @@
         }
         if (Conf['Unread Count'] || Conf['Unread Favicon']) {
           Unread.init();
+        }
+        if (Conf['Prefetch']) {
+          Prefetch.init();
         }
       } else {
         if (Conf['Thread Hiding']) {
