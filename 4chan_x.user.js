@@ -78,7 +78,7 @@
  */
 
 (function() {
-  var $, $$, Anonymize, ArchiveLink, AutoGif, Conf, Config, DeleteLink, DownloadLink, ExpandComment, ExpandThread, Favicon, FileInfo, Filter, Get, ImageExpand, ImageHover, Keybinds, Main, Menu, Nav, Options, Prefetch, QR, QuoteBacklink, QuoteCT, QuoteInline, QuoteOP, QuotePreview, Quotify, Redirect, ReplyHiding, ReportLink, RevealSpoilers, Sauce, StrikethroughQuotes, ThreadHiding, ThreadStats, Time, TitlePost, UI, Unread, Updater, Watcher, d, g, _base;
+  var $, $$, Anonymize, ArchiveLink, AutoGif, Conf, Config, DeleteLink, DownloadLink, ExpandComment, ExpandThread, Favicon, FileInfo, Filter, Get, ImageExpand, ImageHover, Keybinds, Main, Menu, Nav, Options, Prefetch, QR, QuoteBacklink, QuoteCT, QuoteInline, QuoteOP, QuotePreview, Quotify, Redirect, ReplyHiding, ReportLink, RevealSpoilers, Sauce, StrikethroughQuotes, ThreadHiding, ThreadStats, Time, TitlePost, UI, Unread, Updater, Watcher, console, d, g;
 
   Config = {
     main: {
@@ -304,6 +304,7 @@
     HOUR: 1000 * 60 * 60,
     DAY: 1000 * 60 * 60 * 24,
     engine: /WebKit|Presto|Gecko/.exec(navigator.userAgent)[0].toLowerCase(),
+    log: !console ? console = unsafeWindow.console : void 0,
     ready: function(fc) {
       var cb;
       if (/interactive|complete/.test(d.readyState)) {
@@ -539,10 +540,6 @@
       return localStorage.setItem(Main.namespace + name, JSON.stringify(value));
     }
   });
-
-  $.extend($, console.log != null ? {
-    log: typeof (_base = console.log).bind === "function" ? _base.bind(console) : void 0
-  } : void 0);
 
   $$ = function(selector, root) {
     if (root == null) {
@@ -2061,7 +2058,7 @@
       };
 
       _Class.prototype.rmFile = function() {
-        var _base1;
+        var _base;
         QR.resetFileInput();
         delete this.file;
         this.el.title = null;
@@ -2069,7 +2066,7 @@
         if (QR.spoiler) {
           $('label', this.el).hidden = true;
         }
-        return typeof (_base1 = window.URL || window.webkitURL).revokeObjectURL === "function" ? _base1.revokeObjectURL(this.url) : void 0;
+        return typeof (_base = window.URL || window.webkitURL).revokeObjectURL === "function" ? _base.revokeObjectURL(this.url) : void 0;
       };
 
       _Class.prototype.select = function() {
@@ -2134,7 +2131,7 @@
       };
 
       _Class.prototype.rm = function() {
-        var index, _base1;
+        var index, _base;
         QR.resetFileInput();
         $.rm(this.el);
         index = QR.replies.indexOf(this);
@@ -2144,8 +2141,8 @@
           (QR.replies[index - 1] || QR.replies[index + 1]).select();
         }
         QR.replies.splice(index, 1);
-        if (typeof (_base1 = window.URL || window.webkitURL).revokeObjectURL === "function") {
-          _base1.revokeObjectURL(this.url);
+        if (typeof (_base = window.URL || window.webkitURL).revokeObjectURL === "function") {
+          _base.revokeObjectURL(this.url);
         }
         return delete this;
       };
@@ -2362,7 +2359,7 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
       }));
     },
     submit: function(e) {
-      var callbacks, captcha, captchas, challenge, err, m, opts, post, reply, response, textOnly, threadID, _base1, _ref;
+      var callbacks, captcha, captchas, challenge, err, m, opts, post, reply, response, textOnly, threadID, _ref;
       if (e != null) {
         e.preventDefault();
       }
@@ -2436,16 +2433,6 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
         recaptcha_challenge_field: challenge,
         recaptcha_response_field: response.replace(/^\s+/, 'a ').replace(/\s+$/, ' a')
       };
-      try {
-        if (typeof (_base1 = console.log).bind === "function") {
-          _base1.bind(console);
-        }
-      } catch (err) {
-        QR.error("Nightly-kun.. ;_;");
-        setTimeout(function() {
-          return QR.cleanError();
-        }, 2000);
-      }
       callbacks = {
         onload: function() {
           return QR.response(this.response);

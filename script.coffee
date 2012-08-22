@@ -258,6 +258,7 @@ $.extend $,
   HOUR  : 1000*60*60
   DAY   : 1000*60*60*24
   engine: /WebKit|Presto|Gecko/.exec(navigator.userAgent)[0].toLowerCase()
+  log: console = unsafeWindow.console if !console
   ready: (fc) ->
     if /interactive|complete/.test d.readyState
       # Execute the functions in parallel.
@@ -412,12 +413,6 @@ $.extend $,
         defaultValue
     set: (name, value) ->
       localStorage.setItem Main.namespace + name, JSON.stringify value
-
-# Nightly-kun... ;_;
-$.extend $,
-  if console.log?
-      log: console.log.bind? console
-      
 
 $$ = (selector, root=d.body) ->
   Array::slice.call root.querySelectorAll selector
@@ -1894,14 +1889,6 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>
       pwd: if m = d.cookie.match(/4chan_pass=([^;]+)/) then decodeURIComponent m[1] else $('input[name=pwd]').value
       recaptcha_challenge_field: challenge
       recaptcha_response_field: response.replace(/^\s+/, 'a ').replace(/\s+$/, ' a')
-
-    try
-      console.log.bind? console
-    catch err
-      QR.error "Nightly-kun.. ;_;"
-      setTimeout ->
-          QR.cleanError()
-      , 2000
 
     callbacks =
       onload: ->
