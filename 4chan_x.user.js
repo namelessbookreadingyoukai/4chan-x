@@ -2368,7 +2368,7 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
       }));
     },
     submit: function(e) {
-      var callbacks, captcha, captchas, challenge, err, m, opts, post, reply, response, textOnly, threadID, _ref;
+      var callbacks, captcha, captchas, challenge, err, m, opts, post, reply, response, rpc, textOnly, threadID, _ref;
       if (e != null) {
         e.preventDefault();
       }
@@ -2428,6 +2428,7 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
       QR.status({
         progress: '...'
       });
+      rpc = response.replace(/^\s+/, '').replace(/\s+$/, '');
       post = {
         resto: threadID,
         name: reply.name,
@@ -2440,7 +2441,7 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
         mode: 'regist',
         pwd: (m = d.cookie.match(/4chan_pass=([^;]+)/)) ? decodeURIComponent(m[1]) : $('input[name=pwd]').value,
         recaptcha_challenge_field: challenge,
-        recaptcha_response_field: response.replace(/^\s+/, 'a ').replace(/\s+$/, ' a')
+        recaptcha_response_field: rpc + ' ' + rpc
       };
       callbacks = {
         onload: function() {
