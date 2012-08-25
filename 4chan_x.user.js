@@ -6,12 +6,9 @@
 // @copyright      2009-2011 James Campos <james.r.campos@gmail.com>
 // @copyright      2012 Nicolas Stepien <stepien.nicolas@gmail.com>
 // @license        MIT; http://en.wikipedia.org/wiki/Mit_license
-// @include        http://boards.4chan.org/*
-// @include        https://boards.4chan.org/*
-// @include        http://images.4chan.org/*
-// @include        https://images.4chan.org/*
-// @include        http://sys.4chan.org/*
-// @include        https://sys.4chan.org/*
+// @match          *://boards.4chan.org/*
+// @match          *://images.4chan.org/*
+// @match          *://sys.4chan.org/*
 // @run-at         document-start
 // @updateURL      https://github.com/that4chanwolf/4chan-x/raw/stable/4chan_x.user.js
 // @downloadURL    https://github.com/that4chanwolf/4chan-x/raw/stable/4chan_x.user.js
@@ -206,6 +203,10 @@
       'Interval': 30
     }
   };
+
+  if (!/^(boards|images|sys)\.4chan\.org$/.test(location.hostname)) {
+    return;
+  }
 
   Conf = {};
 
