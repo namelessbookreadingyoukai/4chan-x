@@ -5,6 +5,46 @@
     <title>4chan X</title>
     <meta name=description content='The X Makes It Sound Cool'>
     <link rel='shortcut icon' href=favicon.gif>
+    <script>
+var _gaq = [];
+_gaq.push(['_setAccount', 'UA-17404420-7']);
+_gaq.push(['_trackPageview',location.pathname+location.hash]);
+(function(){
+  var d = document;
+  function $(s){return d.querySelector(s, d.body)}
+  function id(i){return $('[data-id='+i+']')}
+  function a(i){return $('[href="#'+i+'"]')}
+  window.addEventListener('hashchange', function(e) {
+    var next = e.newURL.match(/#(.*)$/)[1];
+    if(id(next)) {
+      _gaq.push(['_trackPageview',location.pathname+location.hash]);
+      $('.active').className = null;
+      $('.on').className = null;
+      id(next).className = 'active';
+      a(next).className = 'on';
+    }
+  }, false);
+  d.addEventListener('DOMContentLoaded', function loaded() {
+    var hash, el;
+    d.removeEventListener('DOMContentLoaded', loaded, false);
+    $('.install').addEventListener('click', function() {
+      _gaq.push(['_trackEvent','Links','Install']);
+    }, false);
+    $('a[href$=changelog]').addEventListener('click', function() {
+      _gaq.push(['_trackEvent','Links','Changelog']);
+    }, false);
+    $('a[href$=issues]').addEventListener('click', function() {
+      _gaq.push(['_trackEvent','Links','GitHub Issues']);
+    }, false);
+    hash = window.location.hash.slice(1) || 'install';
+    el = id(hash) || id('install');
+    el.className = 'active';
+    a(el.dataset.id).className = 'on';
+  }, false);
+})();
+    </script>
+    <script src=http://www.google-analytics.com/ga.js async></script>
+    <script src=https://apis.google.com/js/plusone.js></script>
     <style>
 @font-face {
   font-family: 'BebasNeueRegular';
@@ -180,9 +220,9 @@ code {
 
       <b class=firefox>Firefox</b>:
       <ol>
-        <li>If you don't have <a href=https://addons.mozilla.org/en-US/firefox/addon/greasemonkey//>Greasemonkey</a> installed:
+        <li>If you don't have <a href=https://addons.mozilla.org/firefox/addon/scriptish/>Scriptish</a> installed:
           <ol>
-            <li>Install <a href=https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/>Greasemonkey</a>.</li>
+            <li>Install <a href=https://addons.mozilla.org/firefox/addon/scriptish/>Scriptish</a>.</li>
             <li>Restart Firefox.</li>
           </ol>
         </li>
@@ -311,15 +351,14 @@ code {
 
       <b class=firefox>Firefox</b>:
       <ul>
-        <li><b>Scriptish</b> is old and bugged, use <b>Greasemonkey</b> instead.</li>
-<!--    <li>If Scriptish refuses to auto-update 4chan X, disable <code>Require user scripts to update using HTTPS</code> in Scriptish's preferences under Advanced → Update Security.</li> -->
+        <li><b>Greasemonkey</b> is bugged, use <b>Scriptish</b> instead.</li>
+        <li>If Scriptish refuses to auto-update 4chan X, disable <code>Require user scripts to update using HTTPS</code> in Scriptish's preferences under Advanced → Update Security.</li>
         <li>If you get an error stating <code>localStorage is null</code>, go to <code>about:config</code> and enable <code>dom.storage.enabled</code>.</li>
         <li>If you get a <code>Security error</code>, make sure cookies are enabled.</li>
       </ul>
 
       <hr>
-        <p>Note: Do not expect me to do bug fixing. I might attempt to fix a bug, but the chances of that happening are slim to none.</p>
-        <p>Please use Mayhem's issue tracker if at all possible.</p>
+
       <h1><a href=https://github.com/mayhemydg/4chan-x/issues>GitHub Issues Tracker</a></h1>
     </section>
     <section data-id=bonus>
