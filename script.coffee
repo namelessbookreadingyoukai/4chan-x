@@ -2675,17 +2675,17 @@ FileInfo =
     return if post.isInlined and not post.isCrosspost or not post.fileInfo
     node = post.fileInfo.firstElementChild
     alt  = post.img.alt
-    span = $ 'span', node
+    filename = $('span', node)?.title or node.title
     FileInfo.data =
       link:       post.img.parentNode.href
       spoiler:    /^Spoiler/.test alt
       size:       alt.match(/\d+\.?\d*/)[0]
       unit:       alt.match(/\w+$/)[0]
       resolution: node.textContent.match(/\d+x\d+|PDF/)[0]
-      fullname:   node.title
-      shortname:  node.textContent
+      fullname:   filename
+      shortname:  $.shortenFilename filename, post.ID is post.threadID
     # XXX GM/Scriptish
-    node.setAttribute 'data-filename', node.title
+    node.setAttribute 'data-filename', filename
     node.innerHTML = FileInfo.funk FileInfo
   setFormats: ->
     code = Conf['fileInfo'].replace /%([BKlLMnNprs])/g, (s, c) ->
