@@ -3385,11 +3385,11 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
         spoiler: /^Spoiler/.test(alt),
         size: alt.match(/\d+\.?\d*/)[0],
         unit: alt.match(/\w+$/)[0],
-        resolution: span.previousSibling.textContent.match(/\d+x\d+|PDF/)[0],
-        fullname: span.title,
-        shortname: span.textContent
+        resolution: node.textContent.match(/\d+x\d+|PDF/)[0],
+        fullname: node.title,
+        shortname: node.textContent
       };
-      node.setAttribute('data-filename', span.title);
+      node.setAttribute('data-filename', node.title);
       return node.innerHTML = FileInfo.funk(FileInfo);
     },
     setFormats: function() {
