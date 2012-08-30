@@ -1868,6 +1868,10 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>
       QR.captcha.count captchas.length
       unless response
         err = 'No valid captcha.'
+      else
+        response = response.trim()
+        # one word captcha
+        response = "#{response} #{response}" unless /\s/.test response
 
     if err
       # stop auto-posting
@@ -1889,8 +1893,6 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>
     # Provide some feedback that we're starting to submit.
     QR.status progress: '...'
 
-    rpc = response.replace(/^\s+/, '').replace(/\s+$/, '');
-    
     post =
       resto: threadID
       name: reply.name
@@ -1903,7 +1905,7 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>
       mode: 'regist'
       pwd: if m = d.cookie.match(/4chan_pass=([^;]+)/) then decodeURIComponent m[1] else $('input[name=pwd]').value
       recaptcha_challenge_field: challenge
-      recaptcha_response_field: rpc + ' ' + rpc
+      recaptcha_response_field: response
 
     callbacks =
       onload: ->
