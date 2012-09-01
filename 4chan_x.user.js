@@ -4356,11 +4356,11 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
           case 'v':
           case 'co':
           case 'mlp':
-            return 251;
+            return 250;
           case 'vg':
-            return 376;
+            return 370;
           default:
-            return 151;
+            return 150;
         }
       })();
       return Main.callbacks.push(this.node);
