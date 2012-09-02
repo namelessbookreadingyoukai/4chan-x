@@ -3814,8 +3814,6 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
         }
         if (Conf['Quote Inline']) {
           $.on(link, 'click', QuoteInline.toggle);
-        } else {
-          link.setAttribute('onclick', "replyhl('" + post.ID + "');");
         }
         if (!(container = $.id("blc" + qid))) {
           container = $.el('span', {
@@ -4110,7 +4108,6 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
           if (board === g.BOARD && $.id("p" + id)) {
             a.href = "#p" + id;
             a.className = 'quotelink';
-            a.setAttribute('onclick', "replyhl('" + id + "');");
           } else {
             a.href = Redirect.thread(board, 0, id);
             a.className = 'deadlink';
