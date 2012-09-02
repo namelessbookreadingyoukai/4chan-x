@@ -2454,11 +2454,7 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
         },
         onerror: function() {
           QR.status();
-          return QR.error($.el('a', {
-            href: '//www.4chan.org/banned',
-            target: '_blank',
-            textContent: 'Connection error, or you are banned.'
-          }));
+          return QR.error('Connection error with sys.4chan.org.');
         }
       };
       opts = {
@@ -2479,7 +2475,7 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
       return QR.ajax = $.ajax($.id('postForm').parentNode.action, callbacks, opts);
     },
     response: function(html) {
-      var bs, doc, err, msg, persona, postID, reply, threadID, _, _ref;
+      var bs, doc, err, msg, persona, postID, reply, threadID, _, _ref, _ref1;
       doc = d.implementation.createHTMLDocument('');
       doc.documentElement.innerHTML = html;
       if (doc.title === '4chan - Banned') {
@@ -2487,11 +2483,9 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
         err = $.el('span', {
           innerHTML: /^You were issued a warning/.test($('.boxcontent', doc).textContent.trim()) ? "You were issued a warning on " + bs[0].innerHTML + " as " + bs[3].innerHTML + ".<br>Warning reason: " + bs[1].innerHTML : "You are banned! ;_;<br>Please click <a href=//www.4chan.org/banned target=_blank>HERE</a> to see the reason."
         });
-      } else if (msg = doc.getElementById('errmsg')) {
-        err = msg.textContent;
-        if (msg.firstChild.tagName) {
-          err = msg.firstChild;
-          err.target = '_blank';
+      } else if (err = doc.getElementById('errmsg')) {
+        if ((_ref = $('a', err)) != null) {
+          _ref.target = '_blank';
         }
       } else if (!(msg = $('b', doc))) {
         err = 'Connection error with sys.4chan.org.';
@@ -2515,7 +2509,7 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
         sub: Conf['Remember Subject'] ? reply.sub : null
       };
       $.set('QR.persona', persona);
-      _ref = msg.lastChild.textContent.match(/thread:(\d+),no:(\d+)/), _ = _ref[0], threadID = _ref[1], postID = _ref[2];
+      _ref1 = msg.lastChild.textContent.match(/thread:(\d+),no:(\d+)/), _ = _ref1[0], threadID = _ref1[1], postID = _ref1[2];
       $.event(QR.el, new CustomEvent('QRPostSuccessful', {
         bubbles: true,
         detail: {
