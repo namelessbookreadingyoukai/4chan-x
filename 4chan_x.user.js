@@ -4513,6 +4513,10 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
           return "//archive.foolz.us/" + board + "/full_image/" + filename;
         case 'u':
           return "//nsfw.foolz.us/" + board + "/full_image/" + filename;
+        case 'cgl':
+        case 'g':
+        case 'w':
+          return "//archive.rebeccablacktech.com/" + board + "/full_image/" + filename;
         case 'an':
         case 'k':
         case 'toy':
