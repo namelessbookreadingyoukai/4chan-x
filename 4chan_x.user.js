@@ -4513,6 +4513,9 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
           return "//archive.foolz.us/" + board + "/full_image/" + filename;
         case 'u':
           return "//nsfw.foolz.us/" + board + "/full_image/" + filename;
+        case 'ck':
+        case 'lit':
+          return "//fuuka.warosu.org/" + board + "/full_image/" + filename;
         case 'cgl':
         case 'g':
         case 'w':
