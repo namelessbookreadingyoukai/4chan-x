@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           4chan x
-// @version        2.34.7
+// @version        2.34.8
 // @namespace      aeosynth
 // @description    Adds various features.
 // @copyright      2009-2011 James Campos <james.r.campos@gmail.com>
@@ -20,7 +20,7 @@
  * Copyright (c) 2009-2011 James Campos <james.r.campos@gmail.com>
  * Copyright (c) 2012 Nicolas Stepien <stepien.nicolas@gmail.com>
  * http://that4chanwolf.github.com/4chan-x/
- * 4chan X 2.34.7
+ * 4chan X 2.34.8
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -5317,7 +5317,7 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
       return $.globalEval(("(" + code + ")()").replace('_id_', bq.id));
     },
     namespace: '4chan_x.',
-    version: '2.34.7',
+    version: '2.34.8',
     callbacks: [],
     css: '\
 /* dialog styling */\
