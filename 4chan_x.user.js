@@ -2547,7 +2547,7 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
   Options = {
     init: function() {
       var a, el, settings, _i, _len, _ref;
-      _ref = ['navtopr', 'navbotr'];
+      _ref = ['navtopright', 'navbotright'];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         settings = _ref[_i];
         a = $.el('a', {
@@ -2557,8 +2557,7 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
         });
         $.on(a, 'click', Options.dialog);
         el = $.id(settings).firstElementChild;
-        el.hidden = true;
-        $.before(el, a);
+        $.before(el, [a, $.tn('] ')]);
       }
       if (!$.get('firstrun')) {
         if (!Favicon.el) {
@@ -5115,7 +5114,7 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
         }
         return;
       }
-      if (!$.id('navtopr')) {
+      if (!$.id('navtopright')) {
         return;
       }
       $.addClass(d.body, $.engine);

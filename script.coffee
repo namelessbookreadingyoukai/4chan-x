@@ -1999,15 +1999,14 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>
 
 Options =
   init: ->
-    for settings in ['navtopr', 'navbotr']
+    for settings in ['navtopright', 'navbotright']
       a = $.el 'a',
         href: 'javascript:;'
         className: 'settingsWindowLink'
         textContent: '4chan X Settings'
       $.on a, 'click', Options.dialog
       el = $.id(settings).firstElementChild
-      el.hidden = true
-      $.before el, a
+      $.before el, [a, $.tn('] ')]
     unless $.get 'firstrun'
       # Prevent race conditions
       Favicon.init() unless Favicon.el
@@ -4007,7 +4006,7 @@ Main =
       if Conf['404 Redirect'] and /^\d+$/.test g.THREAD_ID
         location.href = Redirect.thread g.BOARD, g.THREAD_ID, location.hash
       return
-    unless $.id 'navtopr'
+    unless $.id 'navtopright'
       return
     $.addClass d.body, $.engine
     $.addClass d.body, 'fourchan_x'
