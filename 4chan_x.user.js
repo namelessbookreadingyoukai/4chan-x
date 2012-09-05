@@ -4504,6 +4504,7 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
       switch (board) {
         case 'a':
         case 'jp':
+          return "//fuuka.warosu.org/" + board + "/full_image/" + filename;
         case 'm':
         case 'q':
         case 'sp':
@@ -4558,6 +4559,11 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
         case 'a':
         case 'co':
         case 'jp':
+          url = "//fuuka.warosu.org/" + path;
+          if (threadID && postID) {
+            url += "#p" + postID;
+          }
+          break;
         case 'm':
         case 'q':
         case 'sp':
