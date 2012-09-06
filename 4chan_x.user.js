@@ -10,8 +10,8 @@
 // @match          *://images.4chan.org/*
 // @match          *://sys.4chan.org/*
 // @run-at         document-start
-// @updateURL      https://github.com/that4chanwolf/4chan-x/raw/stable/4chan_x.user.js
-// @downloadURL    https://github.com/that4chanwolf/4chan-x/raw/stable/4chan_x.user.js
+// @updateURL      https://github.com/namelessbookreadingyoukai/4chan-x/raw/stable/4chan_x.user.js
+// @downloadURL    https://github.com/namelessbookreadingyoukai/4chan-x/raw/stable/4chan_x.user.js
 // @icon           http://mayhemydg.github.com/4chan-x/favicon.gif
 // ==/UserScript==
 
@@ -19,7 +19,7 @@
  *
  * Copyright (c) 2009-2011 James Campos <james.r.campos@gmail.com>
  * Copyright (c) 2012 Nicolas Stepien <stepien.nicolas@gmail.com>
- * http://that4chanwolf.github.com/4chan-x/
+ * http://namelessbookreadingyoukai.github.com/4chan-x/
  * 4chan X 2.34.8
  *
  * Permission is hereby granted, free of charge, to any person
@@ -47,7 +47,7 @@
  * 4chan X is written in CoffeeScript[1], and developed on GitHub[2].
  *
  * [1]: http://coffeescript.org/
- * [2]: https://github.com/that4chanwolf/4chan-x
+ * [2]: https://github.com/namelessbookreadingyoukai/4chan-x
  *
  * CONTRIBUTORS
  *
@@ -2573,9 +2573,9 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
         className: 'reply dialog',
         innerHTML: '<div id=optionsbar>\
   <div id=credits>\
-    <a target=_blank href=http://that4chanwolf.github.com/4chan-x/>4chan X</a>\
-    | <a target=_blank href=https://raw.github.com/that4chanwolf/4chan-x/master/changelog>' + Main.version + '</a>\
-    | <a target=_blank href=http://that4chanwolf.github.com/4chan-x/#bug-report>Issues</a>\
+    <a target=_blank href=http://namelessbookreadingyoukai.github.com/4chan-x/>4chan X</a>\
+    | <a target=_blank href=https://raw.github.com/namelessbookreadingyoukai/4chan-x/master/changelog>' + Main.version + '</a>\
+    | <a target=_blank href=http://namelessbookreadingyoukai.github.com/4chan-x/#bug-report>Issues</a>\
   </div>\
   <div>\
     <label for=main_tab>Main</label>\
@@ -5018,7 +5018,7 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
           $.on(window, 'message', Main.message);
           $.set('lastUpdate', now);
           return $.add(d.head, $.el('script', {
-            src: 'https://github.com/that4chanwolf/4chan-x/raw/master/latest.js'
+            src: 'https://github.com/namelessbookreadingyoukai/4chan-x/raw/master/latest.js'
           }));
         });
       }
@@ -5235,7 +5235,7 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
       var version;
       version = e.data.version;
       if (version && version !== Main.version && confirm('An updated version of 4chan X is available, would you like to install it now?')) {
-        return window.location = "https://raw.github.com/that4chanwolf/4chan-x/" + version + "/4chan_x.user.js";
+        return window.location = "https://raw.github.com/namelessbookreadingyoukai/4chan-x/" + version + "/4chan_x.user.js";
       }
     },
     preParse: function(node) {
@@ -5276,7 +5276,7 @@ Quick Reply <input type=checkbox id=autohide title=Auto-hide>\
           }
         } catch (err) {
           if (notify) {
-            alert("4chan X (" + Main.version + ") error: " + err.message + "\nReport the bug at that4chanwolf.github.com/4chan-x/#bug-report\n\nURL: " + window.location + "\n" + err.stack);
+            alert("4chan X (" + Main.version + ") error: " + err.message + "\nReport the bug at namelessbookreadingyoukai.github.com/4chan-x/#bug-report\n\nURL: " + window.location + "\n" + err.stack);
           }
         }
       }
